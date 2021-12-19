@@ -33,11 +33,18 @@ class Movie {
   double voteAverage;
   int voteCount;
 
+  String? heroId;
+
   factory Movie.fromJson(String str) => Movie.fromMap(json.decode(str));
 
   final String _fullPosterBaserUrl = 'https://image.tmdb.org/t/p/w500';
   String get fullPosterImg {
     if (posterPath != null) return (_fullPosterBaserUrl + posterPath!);
+    return 'https://i.stack.imgur.com/GNhxO.png';
+  }
+
+  String get fullBackdropPath {
+    if (backdropPath != null) return (_fullPosterBaserUrl + backdropPath!);
     return 'https://i.stack.imgur.com/GNhxO.png';
   }
 

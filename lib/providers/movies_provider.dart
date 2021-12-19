@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:peliculas/models/models.dart';
+import 'package:peliculas/models/search_response.dart';
 
 class MoviesProvider extends ChangeNotifier {
   String _baseUrl = 'api.themoviedb.org';
@@ -14,6 +15,8 @@ class MoviesProvider extends ChangeNotifier {
   int _popularPage = 0;
   bool isGettinPopular = false;
 
+  Map<int, List<Cast>> movieCast = {}; // el int va a ser el id de la pelicula
+
   MoviesProvider() {
     print('Movies provider incializado');
     getOnDisplayMovies();
@@ -21,7 +24,7 @@ class MoviesProvider extends ChangeNotifier {
   }
 
   Future<String> _getJsonData(String endpoint, [int page = 1]) async {
-    Uri url = Uri.https(_baseUrl, endpoint,
+    final url = Uri.https(_baseUrl, endpoint,
         {'api_key': _apiKey, 'language': _language, 'page': '$page'});
 
     final response = await http.get(url);
@@ -39,8 +42,21 @@ class MoviesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<List<Cast>> getMovieCast(int movieId) async {
+    if (movieCast.containsKey(movieId)) {
+      return movieCast[movieId]!;
+    }
+
+    final jsonData = await _getJsonData('/3/movie/$movieId/credits');
+
+    final creditsResponse = CreditsResponse.fromJson(jsonData);
+
+    movieCast[movieId] = creditsResponse.cast;
+
+    return creditsResponse.cast;
+  }
+
   void getPopularMovies() async {
-    print("obteniendo populars");
     _popularPage++;
     isGettinPopular = true;
     notifyListeners();
@@ -51,5 +67,18 @@ class MoviesProvider extends ChangeNotifier {
     this.popularMovies = [...this.popularMovies, ...popularMovies.results];
 
     notifyListeners();
+  }
+
+  Future<List<Movie>> searchMovie(String query) async {
+    final url = Uri.https(_baseUrl, '3/search/movie',
+        {'api_key': _apiKey, 'language': _language, 'query': query});
+
+    final response = await http.get(url);
+    final SearchResponse searchResponse =
+        SearchResponse.fromJson(response.body);
+
+    final movies = searchResponse.results;
+
+    return movies;
   }
 }
