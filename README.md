@@ -1,6 +1,6 @@
 # peliculas
 
-A new Flutter project.
+Movies app using flutter: with a search engine, http requests, provider and so on
 
 ## Getting Started
 
